@@ -69,38 +69,5 @@ button.enviar-whatsapp{width:100%;padding:15px;margin-top:30px;background-color:
 <div class="pix-chave">Chave PIX: divinopudim01@gmail.com</div>
 </div>
 </div>
-<script>
-var CSV_URL="https://corsproxy.io/?https://docs.google.com/spreadsheets/d/e/2PACX-1vTFNdxLMj53mTlboA9MBG6J9v_7Lx7XyJvlCyIGJX3Oe7UpDo4B784in9gmieDYFKvEnK3HrkETid6t/pub?output=csv";
-var WHATSAPP="5574998081472";
-var produtos=[];
-var taxaEntrega=0;
-function parseCSV(text){var sep="\n";var linhas=text.trim().split(sep);var cab=linhas[0].split(",").map(function(c){return c.trim().replace(/"/g,"");});var res=[];for(var i=1;i<linhas.length;i++){var cols=linhas[i].split(",").map(function(c){return c.trim().replace(/"/g,"");});if(cols.length<2)continue;var obj={};cab.forEach(function(key,idx){obj[key]=cols[idx]||"";});res.push(obj);}return res;}
-function carregarPlanilha(){fetch(CSV_URL).then(function(r){return r.text();}).then(function(texto){var dados=parseCSV(texto);dados.forEach(function(row){var t=row["taxa_entrega"]||row["taxa-entrega"]||"";if(t&&parseFloat(t.replace(",",".")>0)){taxaEntrega=parseFloat(t.replace(",","."));}});produtos=dados.filter(function(row){return row.ativo&&row.ativo.toLowerCase()==="sim";}).map(function(row){return{id:"p_"+row.nome.toLowerCase().replace(/[^a-z0-9]/g,"_"),nome:row.nome,preco:parseFloat(row.preco.replace(",",".")),imagem:row.imagem||""};});renderizarProdutos();document.getElementById("loading-msg").style.display="none";document.getElementById("taxaEntregaLabel").innerText="Taxa de entrega: R$ "+taxaEntrega.toFixed(2).replace(".",",");updateTotal();}).catch(function(e){document.getElementById("loading-msg").innerText="Erro ao carregar. Recarregue.";console.error(e);});}
-function renderizarProdutos() {
-  var container = document.getElementById("listaProdutos");
-  container.innerHTML = "";
-  produtos.forEach(function(p) {
-    var div = document.createElement("div");
-    div.className = "produto";
-    var preco = p.preco.toFixed(2).replace(".", ",");
-    
-    div.innerHTML = "<img src='" + p.imagem + "' alt='" + p.nome + "' class='img-pudim' onerror=\"this.style.display='none'\">" +
-                    "<div class='produto-nome'>" + p.nome + "</div>" +
-                    "<div class='produto-preco'>R$ " + preco + "</div>" +
-                    "<div class='produto-qtd'>" +
-                    "<button class='qtd-btn' onclick=\"mudarQtd('" + p.id + "', -1)\">-</button>" +
-                    "<input type='number' id='" + p.id + "' class='qtd-input' value='0' min='0' onchange='updateTotal()'>" +
-                    "<button class='qtd-btn' onclick=\"mudarQtd('" + p.id + "', 1)\">+</button>" +
-                    "</div>";
-                    
-    container.appendChild(div);
-  });
-}
-function mudarQtd(id,delta){var input=document.getElementById(id);var atual=parseInt(input.value);if(isNaN(atual))atual=0;input.value=Math.max(0,atual+delta);updateTotal();}
-function updateTotal(){var subtotal=0;produtos.forEach(function(p){var el=document.getElementById(p.id);var qtd=el?(parseInt(el.value)||0):0;subtotal+=qtd*p.preco;});var total=subtotal+taxaEntrega;document.getElementById("spanSubtotal").innerText="R$ "+subtotal.toFixed(2).replace(".",",");document.getElementById("spanEntrega").innerText="R$ "+taxaEntrega.toFixed(2).replace(".",",");document.getElementById("spanTotal").innerText="R$ "+total.toFixed(2).replace(".",",");}
-function verificarTroco(){var pag=document.getElementById("pagamento").value;document.getElementById("divTroco").style.display=(pag==="Especie")?"block":"none";if(pag!=="Especie")document.getElementById("troco").value="";}
-function enviarWhatsApp(){var nome=document.getElementById("nome").value.trim();var endereco=document.getElementById("endereco").value.trim();var pagamento=document.getElementById("pagamento").value;var troco=document.getElementById("troco").value;if(!nome||!endereco||!pagamento){alert("Preencha todos os campos.");return;}var itens=[];produtos.forEach(function(p){var el=document.getElementById(p.id);var qtd=el?(parseInt(el.value)||0):0;if(qtd>0){itens.push(qtd+"x "+p.nome+" (R$ "+(qtd*p.preco).toFixed(2).replace(".",",")+")");}});if(itens.length===0){alert("Adicione pelo menos um produto.");return;}var subtotal=0;produtos.forEach(function(p){var el=document.getElementById(p.id);subtotal+=el?((parseInt(el.value)||0)*p.preco):0;});var total=subtotal+taxaEntrega;var pagLabel=pagamento==="Especie"?"Em especie (no ato da entrega)":pagamento;var msg="*Novo Pedido - Divino Pudim*\n\n*Cliente:* "+nome+"\n*Endereco:* "+endereco+"\n\n*Itens:*\n"+itens.join("\n")+"\n\n*Subtotal:* R$ "+subtotal.toFixed(2).replace(".",",")+"\n*Taxa:* R$ "+taxaEntrega.toFixed(2).replace(".",",")+"\n*Total:* R$ "+total.toFixed(2).replace(".",",")+"\n\n*Pagamento:* "+pagLabel;if(pagamento==="Especie"&&troco){msg+="\nTroco para: R$ "+troco;}window.open("https://wa.me/"+WHATSAPP+"?text="+encodeURIComponent(msg),"_blank");}
-carregarPlanilha();
-</script>
 </body>
 </html>
