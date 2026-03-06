@@ -79,8 +79,7 @@ var produtos = [];
 var taxaEntrega = 0;
 
 function parseCSV(text) {
-  var linhas = text.trim().split("
-");
+  var linhas = text.trim().split("\n");
   var cab = linhas[0].split(",").map(function(c){ return c.trim().replace(/"/g,""); });
   var res = [];
   for (var i = 1; i < linhas.length; i++) {
